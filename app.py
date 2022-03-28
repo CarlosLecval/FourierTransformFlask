@@ -83,7 +83,7 @@ def fft():
     f = request.files['file']
     f.save(f'{imageName}.png')
     s3.upload_file(Bucket='fourierbucket', Key=f'{imageName}.png', Filename=f'{imageName}.png')
-    original = Image.open("evening.jpeg")
+    original = Image.open(f"{imageName}.png")
     img = np.array(original)
     fft_images, fft_images_log = rgb_fft(img)
     names = [f"bg_image_r_{imageName}", f"bg_image_g_{imageName}", f"bg_image_b_{imageName}"]
@@ -117,7 +117,3 @@ def ifft():
     return {
         "image": imageName
     }
-
-
-
-
