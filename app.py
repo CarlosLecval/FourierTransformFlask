@@ -1,4 +1,5 @@
-from flask import Flask, request
+import json
+from flask import Flask, request, jsonify, make_response
 import uuid
 import boto3
 import cv2
@@ -76,10 +77,9 @@ def inverse_fourier(image):
     final_image_assebled = np.dstack([final_image[0].astype('int'), final_image[1].astype('int'), final_image[2].astype('int')])
     return final_image_assebled
 
-
 @app.route("/fft", methods=["POST"])
 def fft():
-    imageName = str(uuid.uuid4())
+    imageName = request.form["name"]
     f = request.files['file']
     f.save(f'{imageName}.png')
     s3.upload_file(Bucket='fourierbucket', Key=f'{imageName}.png', Filename=f'{imageName}.png')
@@ -88,9 +88,9 @@ def fft():
     fft_images, fft_images_log = rgb_fft(img)
     names = [f"bg_image_r_{imageName}", f"bg_image_g_{imageName}", f"bg_image_b_{imageName}"]
     write_background_images(fft_images_log, fft_images, names)
-    return {
-        "image": imageName
-    }
+    res = jsonify(image=imageName)
+    res.headers["Access-Control-Allow-Origin"] = "*"
+    return res
 
 
 @app.route("/ifft", methods=["POST"])
@@ -114,6 +114,6 @@ def ifft():
     data = Image.fromarray(transformed_clipped.astype('uint8'))
     data.save(f"{imageName}_transformed.png")
     s3.upload_file(Bucket='fourierbucket', Key=f'{imageName}_transformed.png', Filename=f'{imageName}_transformed.png')
-    return {
-        "image": imageName
-    }
+    res = jsonify(image=imageName)
+    res.headers["Access-Control-Allow-Origin"] = "*"
+    return res
