@@ -1,4 +1,4 @@
-import json
+import urllib
 from flask import Flask, request, jsonify, make_response
 import uuid
 import boto3
@@ -96,12 +96,18 @@ def fft():
 @app.route("/ifft", methods=["POST"])
 def ifft():
     imageName = request.form['imageName']
-    r = request.files['canvasR']
-    g = request.files['canvasG']
-    b = request.files['canvasB']
-    r.save(f'{imageName}_mask_r.png')
-    g.save(f'{imageName}_mask_g.png')
-    b.save(f'{imageName}_mask_b.png')
+    r = request.form['canvasR']
+    g = request.form['canvasG']
+    b = request.form['canvasB']
+    response = urllib.request.urlopen(r)
+    with open(f'{imageName}_mask_r.png', 'wb') as f:
+        f.write(response.file.read())
+    response = urllib.request.urlopen(g)
+    with open(f'{imageName}_mask_g.png', 'wb') as f:
+        f.write(response.file.read())
+    response = urllib.request.urlopen(b)
+    with open(f'{imageName}_mask_b.png', 'wb') as f:
+        f.write(response.file.read())
     canvasImages = []
     canvasImages.append(cv2.imread(f'{imageName}_mask_r.png', -1))
     canvasImages.append(cv2.imread(f'{imageName}_mask_g.png', -1))
